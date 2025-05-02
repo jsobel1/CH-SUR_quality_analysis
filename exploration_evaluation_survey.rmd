@@ -1,0 +1,986 @@
+---
+title: "CH-SUR Evaluation Survey"
+author: "Jonathan Sobel"
+date: "2023-04-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## data loading
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+library(tidyverse)
+library(here)
+library(lubridate)
+library(knitr)
+library(kableExtra)
+library(scales)
+library(ggpubr)
+library(ggplot2)
+library(DT)
+library(xtable)
+library(knitr)
+library(gtsummary)
+
+setwd("C:/Users/sobel/Desktop/CH_SUR_evaluation")
+
+# load data
+data <- read_csv("HospitalbasedSurveil-CHSUREVALUATION_DATA_2023-05-02_1335.csv")
+
+colnames(data)
+
+data=data %>% mutate(role=recode(role,
+ '1'= "Principal Investigator", '2'= "Study Nurse", 
+ '3'= "Researcher",
+  '4'= "Member of the Federal Office of Public Health or ISG"),
+  duration_work=recode(duration_work,'1'= "Less than 6 months",
+   '2'= "6 months to 1 year", '3'= "1 year to 2 years", 
+   '4'= "More than 2 years"),
+   comprehension=recode(comprehension,
+   '1'= "Extremely well", 
+   '2'= "Very well",
+   '3'= "Average understanding",
+   '4'= "Not well",
+   '5'= "No understanding"),
+   rating_importance=recode(rating_importance,
+   '1' ="Highly important", 
+   '2'="Important", '3'="Neither important nor unimportant", 
+   '4'="Unimportant", '5'="Highly unimportant"),
+   org_objectives=recode(org_objectives,'1'= "Highly relevant", '2' = "relevant",
+   '3'="Neither relevant nor irrelevant", 
+   '4'="Irrelevant", '5'="Highly irrelevant"),
+   adapt_org=recode(adapt_org,'1'= "Highly adaptable",
+   '2' = "Adaptable", 
+   '3'="Neither adaptable nor unadaptable",
+   '4'="Unadaptable", '5'="Highly unadaptable"),
+   difficulty_use= recode(difficulty_use,'1'= "Very easy to use",
+   '2' = "Easy to use",'3'="Average",
+   '4'="Difficult to use", '5'="Extremely difficult to use"),
+   reliability= recode( reliability, '1' = "Highly reliable", '2' = "Reliable",
+   '3' = "Average",
+   '4' = "Unreliable",
+   '5' = "Highly unreliable"),
+   long_engage = recode(long_engage,'1'= "Highly likely",
+   '2' = "Likely", '3'="Neutral (unsure at this time)",
+   '4'="Unlikely", '5'="Highly unlikely"),
+   issues_isg=recode(issues_isg,'1'="Yes",'0'= "No",'-1'="Not applicable"),
+   issues_foph=recode(issues_foph,'1'="Yes",'0'= "No",'-1'="Not applicable"),
+   challenges_org=recode(challenges_org,'1'="Yes",'0'= "No"),
+   changes_pi=recode(changes_pi,'1'= "Strongly agree", '2' = "Agree", '3'="Neutral", '4'="Disagree", '5'="Strongly disagree"),
+   audit_case_pi=recode(audit_case_pi,'1'="Yes",'0'= "No",'-1'="Not applicable"),
+   audit_case_pi_interval=recode(audit_case_pi_interval,'1'="Daily",'2'= "Weekly", '3'="Monthly", '4'="Quarterly", '5'="Less often than quarterly"),
+   audit_accuracy_pi=recode(audit_accuracy_pi,'1'="Yes",'0'= "No",'-1'="Not applicable"),
+   audit_accuracy_pi_interval=recode(audit_accuracy_pi_interval,'1'="Daily",'2'= "Weekly", '3'="Monthly", '4'="Quarterly", '5'="Less often than quarterly"),
+   unusual_resource_pi=recode(unusual_resource_pi,'1'="Yes",'0'= "No",'-1'="Not applicable"),
+   participation_pi=recode(participation_pi,'1'="Yes",'0'= "No"),
+   changes_impact_pi=recode(changes_impact_pi,'1'="Yes",'0'= "No"),
+   train_nurse=recode(train_nurse,'1'="Yes",'0'= "No"),
+   data_proc_nurse=recode(data_proc_nurse,'1'= "Extremely efficient", '2' = "Efficient", '3'="Average", '4'="Inefficient", '5'="Extremely inefficient"),
+   data_qual_protocol=recode(data_qual_protocol,'1'="Yes",'0'= "No"),
+   data_qual_description=recode(data_qual_description,'1'= "Extremely effective", '2' = "Effective", '3'="Average", '4'="Ineffective", '5'="Extremely ineffective"),
+   data_qual_rate=recode(data_qual_rate,'1'="Excellent", '2' = "Good", '3'="Fair", '4'="Poor", '5'="Extremely Poor"),
+   concern_ppv=recode(concern_ppv,'1'="Yes",'0'= "No",'-1'="Not applicable"),
+   subpop_exclusion=recode(subpop_exclusion,'1'="Yes",'0'= "No"),
+   corr_err_approach=recode(corr_err_approach,'1'="Yes",'0'= "No"),
+   ident_simplicity=recode(ident_simplicity,'1'= "Extremely simple", '2' = "Simple", '3'="Average", '4'="Difficult", '5'="Extremely difficult"),
+   time_use=recode(time_use,'1'= "≤ 20 minutes",'2'= "> 20 minutes and ≤ 45 minutes",'3'= "> 45 minutes and ≤ 1 hour",'4'= "> 1 hour"),
+   followup_nurse=recode(followup_nurse,'1'="Yes",'0'= "No"),
+   workhabits_nurses=recode(workhabits_nurses,'1'="Yes",'0'= "No"),
+   training_nurses=recode(training_nurses,'1'="Yes",'0'= "No"),
+   obtaininfo_nurses=recode(obtaininfo_nurses,'1'="Strongly agree", '2' = "Agree", '3'="Neutral", '4'="Disagree", '5'="Strongly disagree"),
+   workprocess_internal=recode(workprocess_internal,'1'= "Extremely efficient" , '2' = "Efficient", '3'="Average", '4'="Inefficient", '5'="Extremely inefficient"),
+   issues_crf=recode(issues_crf,'1'="Yes",'0'= "No"),
+   response_timeliness=recode(response_timeliness,'1'="Strongly agree", '2' = "Agree", '3'="Neutral", '4'="Disagree", '5'="Strongly disagree"),
+   response_timeliness_spec=recode(response_timeliness_spec,'1' = "Less than 24 hours", '2' = "24 hours to 3 days", '3' = "More than 3 days"),
+   response_timeliness_2=recode(response_timeliness_2,'1'="Less than a day",'2'="Between 1 day and 2 days",'3'="Between 2 days and a week",'4'="More than a week"),
+   data_quality_internal=recode(data_quality_internal,'1'="Excellent", '2' = "Good", '3'="Fair", '4'="Poor", '5'="Extremely Poor"),
+   concern_ppv_internal=recode(concern_ppv_internal,'1'="Yes",'0'= "No",'-1'="Not applicable"),
+   subpop_excl_internal=recode(subpop_excl_internal,'1'="Yes",'0'= "No"),
+   rsv = recode(rsv,'1'="Yes",'0'= "No"),
+   disease_other = recode(disease_other,'1'="Yes",'0'= "No"),
+   variable_other = recode(variable_other,'1'="Yes",'0'= "No"))
+
+data$comprehension <- factor(data$comprehension, levels=c("extremely well","very well" ,     
+ "average understanding", "not well",NA))
+data$duration_work <- factor(data$duration_work, levels=c("Less than 6 months","6 months to 1 year", "1 year to 2 years", "More than 2 years",NA))
+
+data$comprehension <- factor(data$comprehension, levels=c("Extremely well","Very well" ,     
+ "Average understanding", "Not well",NA))
+
+data$rating_importance <- factor(data$rating_importance, levels=c("Highly important","Important", "Neither important nor unimportant", "Unimportant","Highly unimportant",NA))
+
+data$org_objectives <- factor(data$org_objectives, levels=c("Highly relevant","relevant", "Neither relevant nor irrelevant", "Irrelevant","Highly irrelevant",NA))
+
+data$adapt_org <- factor(data$adapt_org, levels=c("Highly adaptable","Adaptable", "Neither adaptable nor unadaptable", "Unadaptable","Highly unadaptable",NA))
+
+data$difficulty_use <- factor(data$difficulty_use, levels=c("Very easy to use","Easy to use", "Average", "Difficult to use","Extremely difficult to use",NA))
+
+data$reliability <- factor(data$reliability, levels=c("Highly reliable","Reliable", "Average", "Unreliable","Highly unreliable",NA))
+
+data$long_engage <- factor(data$long_engage, levels=c("Highly likely","Likely", "Neutral", "Unlikely","Highly unlikely",NA))
+
+data$issues_isg <- factor(data$issues_isg, levels=c("Yes","No",NA))
+
+data$issues_foph <- factor(data$issues_foph, levels=c("Yes","No",NA))
+
+data$issues_crf <- factor(data$issues_crf, levels=c("Yes","No",NA))
+
+data$followup_nurse <- factor(data$followup_nurse, levels=c("Yes","No",NA))
+
+data$workhabits_nurses <- factor(data$workhabits_nurses, levels=c("Yes","No",NA))
+
+data$training_nurses <- factor(data$training_nurses, levels=c("Yes","No",NA))
+
+data$obtaininfo_nurses <- factor(data$obtaininfo_nurses, levels=c("Strongly agree","Agree", "Neutral", "Disagree","Strongly disagree",NA))
+
+data$workprocess_internal <- factor(data$workprocess_internal, levels=c("Extremely efficient","Efficient", "Average", "Inefficient","Extremely inefficient",NA))
+
+data$response_timeliness <- factor(data$response_timeliness, levels=c("Strongly agree","Agree", "Neutral", "Disagree","Strongly disagree",NA))
+
+data$response_timeliness_spec <- factor(data$response_timeliness_spec, levels=c("Less than 24 hours","24 hours to 3 days", "More than 3 days",NA))
+
+data$response_timeliness_2 <- factor(data$response_timeliness_2, levels=c("Less than a day","Between 1 day and 2 days", "Between 2 days and a week", "More than a week",NA))
+
+data$data_quality_internal <- factor(data$data_quality_internal, levels=c("Excellent","Good", "Fair", "Poor","Extremely Poor",NA))
+
+data$concern_ppv_internal <- factor(data$concern_ppv_internal, levels=c("Yes","No","Not applicable",NA))
+
+data$subpop_excl_internal <- factor(data$subpop_excl_internal, levels=c("Yes","No","Not applicable",NA))
+
+data$rsv <- factor(data$rsv, levels=c("Yes","No",NA))
+
+data$disease_other <- factor(data$disease_other, levels=c("Yes","No",NA))
+
+data$variable_other <- factor(data$variable_other, levels=c("Yes","No",NA))
+
+```
+# Survey results table
+
+```{r,echo=FALSE}
+data_table=data%>%dplyr::select(role,
+comprehension,
+duration_work,
+rating_importance,
+org_objectives,
+adapt_org,
+difficulty_use,
+reliability,
+long_engage,
+issues_isg,
+issues_foph,
+issues_crf,
+followup_nurse,
+workhabits_nurses,
+training_nurses,
+obtaininfo_nurses,
+workprocess_internal,
+response_timeliness,
+response_timeliness_spec,
+response_timeliness_2,
+data_quality_internal,
+concern_ppv_internal,
+subpop_excl_internal,
+rsv,
+disease_other,
+variable_other)
+
+
+tbl_summary(data_table, missing = "no") %>% 
+  add_n() %>% 
+  modify_header(label = "**Variable**") %>% 
+  bold_labels() 
+
+tbl_summary(data_table,by = role, missing = "no") %>% 
+  add_n() %>% 
+  modify_header(label = "**Variable**") %>% 
+  bold_labels() 
+```
+
+# Survey results plots
+```{r,echo=FALSE}
+
+table(data$role)%>%data.frame()%>%ggplot(aes(Var1,Freq,fill=Var1))+
+geom_bar(stat="identity",width=.6)+
+coord_flip()+theme_bw()+ 
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+  guides(fill = guide_legend(title = "Role")) +
+  theme(legend.position = "none")+
+labs(x="Role",y="Number of respondents")+
+ggtitle("Number of respondents by role")
+
+data%>%dplyr::select(role, rating_importance) %>% 
+  group_by(role) %>% 
+  count(rating_importance,.drop = FALSE) %>% 
+  ggplot(aes(x = rating_importance, y = n, fill = role)) +
+  geom_bar(stat="identity")+
+  scale_y_continuous() +
+  labs(x = "Rating of importance", y = "Number of respondents") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+  guides(fill = guide_legend(title = "Role")) +
+  ggtitle("Rating of importance of CH-SUR")
+
+# pie chart of importance with case number and percentage
+
+Pie_importance=table(data$rating_importance) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")),
+     position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Importance of CH-SUR")) +
+    ggtitle("importance of CH-SUR")
+
+data%>%dplyr::select(role, comprehension) %>%
+    group_by(role) %>% 
+    count(comprehension,.drop = FALSE) %>% 
+    ggplot(aes(x = comprehension, y = n, fill = role)) +
+    geom_bar(stat="identity")+
+    scale_y_continuous() +
+    labs(x = "Comprehension of CH-SUR", y = "Number of respondents") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+    guides(fill = guide_legend(title = "Role")) +
+    ggtitle("Comprehension of CH-SUR")
+
+# pie chart of comprehension with case number and percentage
+
+
+Pie_comprehension=table(data$comprehension) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")),
+     position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Comprehension of CH-SUR")) +
+    ggtitle("Comprehension of CH-SUR")
+
+
+
+data%>%dplyr::select(role, org_objectives) %>% 
+  group_by(role) %>% 
+  count(org_objectives,.drop = FALSE) %>% 
+  ggplot(aes(x = org_objectives, y = n, fill = role)) +
+  geom_bar(stat="identity")+
+  scale_y_continuous() +
+  labs(x = "Relevance of CH-SUR to the organization's objectives", y = "Number of respondents") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+  guides(fill = guide_legend(title = "Role")) +
+  ggtitle("Relevance of CH-SUR to the organization's objectives")
+
+
+# pie chart of org_objectives with case number and percentage
+
+Pie_organisation=table(data$org_objectives) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")),
+     position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Relevance of CH-SUR to the organization's objectives")) +
+    ggtitle("Relevance of CH-SUR to the organization's objectives")
+
+data%>%dplyr::select(role, adapt_org) %>% 
+group_by(role) %>% 
+count(adapt_org,.drop = FALSE) %>%
+ggplot(aes(x = adapt_org, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Adaptability of CH-SUR to the organization's needs", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Adaptability of CH-SUR to the organization's needs")
+
+# pie chart of adapt_org  with case number and percentage
+
+Pie_adapt=table(data$adapt_org) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Adaptability of CH-SUR")) +
+    ggtitle("Adaptability of CH-SUR to the organization's needs")
+
+
+
+data%>%dplyr::select(role, difficulty_use) %>%
+group_by(role) %>%
+count(difficulty_use,.drop = FALSE) %>%
+ggplot(aes(x = difficulty_use, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Difficulty of using CH-SUR", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Difficulty of using CH-SUR")
+
+# pie chart of difficulty_use with case number and percentage
+
+Pie_difficulty=table(data$difficulty_use) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")),
+     position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Difficulty of using CH-SUR")) +
+    ggtitle("Difficulty of using CH-SUR")
+
+
+data%>%dplyr::select(role, reliability) %>%
+group_by(role) %>%
+count(reliability,.drop = FALSE) %>%
+ggplot(aes(x = reliability, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Reliability of CH-SUR", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Reliability of CH-SUR")
+
+# pie chart of reliability with case number and percentage
+
+Pie_reliability=table(data$reliability) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Reliability of CH-SUR")) +
+    ggtitle("Reliability of CH-SUR")
+
+
+data%>%dplyr::select(role, long_engage) %>%
+group_by(role) %>%
+count(long_engage,.drop = FALSE) %>%
+ggplot(aes(x = long_engage, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Likelihood of long-term engagement with CH-SUR", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Likelihood of long-term engagement with CH-SUR")
+
+# pie chart of long_engage with case number and percentage
+
+Pie_long=table(data$long_engage) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Likelihood of long-term engagement with CH-SUR")) +
+    ggtitle("Likelihood of long-term engagement with CH-SUR")
+
+
+data%>%dplyr::select(role, duration_work) %>%
+group_by(role) %>%
+count(duration_work,.drop = FALSE) %>%
+ggplot(aes(x = duration_work, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Duration of collaboration", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Duration of the collaboration with CH-SUR")
+
+# pie chart of duration_work with case number and percentage
+
+Pie_duration=table(data$duration_work) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Duration of collaboration")) +
+    ggtitle("Duration of the collaboration with CH-SUR")
+
+#issues_isg,issues_foph, issues_crf, followup_nurse, workhabits_nurses,training_nurses, obtaininfo_nurses
+data%>%dplyr::select(role, issues_isg) %>%
+group_by(role) %>% count(issues_isg,.drop = FALSE) %>% 
+ggplot(aes(x = issues_isg, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Issues with the ISG", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Issues with ISG")
+
+# pie chart of issues_isg with case number and percentage
+
+table(data$issues_isg) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Issues with ISG")) +
+    ggtitle("Issues with ISG")
+
+data%>%dplyr::select(role, issues_foph) %>%
+group_by(role) %>% count(issues_foph,.drop = FALSE) %>%
+ggplot(aes(x = issues_foph, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Issues with FOPH", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Issues with FOPH")
+
+# pie chart of issues_foph with case number and percentage
+
+table(data$issues_foph) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Issues with FOPH")) +
+    ggtitle("Issues with FOPH")
+
+
+data%>%dplyr::select(role, issues_crf) %>%
+group_by(role) %>% count(issues_crf,.drop = FALSE) %>%
+ggplot(aes(x = issues_crf, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Issues with CRF", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Issues with CRF")
+
+# pie chart of issues_crf with case number and percentage
+
+table(data$issues_crf) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Issues with CRF")) +
+    ggtitle("Issues with CRF")
+
+
+
+data%>%dplyr::select(role, followup_nurse) %>%
+group_by(role) %>% count(followup_nurse,.drop = FALSE) %>%
+ggplot(aes(x = followup_nurse, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Follow-up by the nurse", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Do you need to follow-up cases often?")
+
+# pie chart of followup_nurse with case number and percentage
+
+Pie_follow=table(data$followup_nurse) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Follow-up by the nurse")) +
+    ggtitle("Do you need to follow-up cases often?")
+
+data%>%dplyr::select(role, workhabits_nurses) %>%
+group_by(role) %>% count(workhabits_nurses,.drop = FALSE) %>%
+ggplot(aes(x = workhabits_nurses, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Work habits of the nurses", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Work habits changes of nurses \n due to COVID-19")
+
+# pie chart of workhabits_nurses with case number and percentage
+
+Pie_workhabits=table(data$workhabits_nurses) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Work habits of the nurses")) +
+    ggtitle("Work habits changes of nurses \n due to COVID-19")
+
+data%>%dplyr::select(role, training_nurses) %>%
+group_by(role) %>% count(training_nurses) %>%
+ggplot(aes(x = training_nurses, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Training of the nurses", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Training of the nurses")
+
+# pie chart of training_nurses with case number and percentage
+
+Pie_training=table(data$training_nurses) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Training of the nurses")) +
+    ggtitle("Training of the nurses")
+
+data%>%dplyr::select(role, obtaininfo_nurses) %>%
+group_by(role) %>% count(obtaininfo_nurses) %>%
+ggplot(aes(x = obtaininfo_nurses, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Obtaining information easily", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Information can be easily obtained \n from your local clinical system")
+
+# pie chart of obtaininfo_nurses with case number and percentage
+
+table(data$obtaininfo_nurses) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Obtaining information easily")) +
+    ggtitle("Information can be easily obtained \n from your local clinical system")
+
+# workprocess_internal, response_timeliness, response_timeliness_spec, response_timeliness_2, data_quality_internal, concern_ppv_internal, subpop_excl_internal
+
+data%>%dplyr::select(role, workprocess_internal) %>%
+group_by(role) %>% count(workprocess_internal) %>%
+ggplot(aes(x = workprocess_internal, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Work process", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("How would you describe the working process?")
+
+# pie chart of workprocess_internal with case number and percentage
+
+Pie_working_process=table(data$workprocess_internal) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Work process")) +
+    ggtitle("How would you describe the working process?")
+
+data%>%dplyr::select(role, response_timeliness) %>%
+group_by(role) %>% count(response_timeliness) %>%
+ggplot(aes(x = response_timeliness, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Response timeliness", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Data providers and other collaborators respond \n to workrequests in a timely manner.")
+
+# pie chart of response_timeliness with case number and percentage
+
+Pie_response_timeliness=table(data$response_timeliness) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Response timeliness")) +
+    ggtitle("Data providers and other collaborators respond \n to workrequests in a timely manner.")
+
+data%>%dplyr::select(role, response_timeliness_spec) %>%
+group_by(role) %>% count(response_timeliness_spec) %>%
+ggplot(aes(x = response_timeliness_spec, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Response timeliness (specific)", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Approximately how much time did you wait \n for a response to work requests?")
+
+# pie chart of response_timeliness_spec with case number and percentage
+
+Pie_response_timliness_spec=table(data$response_timeliness_spec) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Response timeliness (specific)")) +
+    ggtitle("Approximately how much time did you wait \n for a response to work requests?")
+
+data%>%dplyr::select(role, response_timeliness_2) %>%
+group_by(role) %>% count(response_timeliness_2) %>%
+ggplot(aes(x = response_timeliness_2, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Response timeliness (2)", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("How timely do the data providers and other collaborators \n respond to your work requests?")
+
+# pie chart of response_timeliness_2 with case number and percentage
+
+table(data$response_timeliness_2) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Response timeliness (2)")) +
+    ggtitle("How timely do the data providers and other collaborators \n respond to your work requests?")
+
+
+data%>%dplyr::select(role, data_quality_internal) %>%
+group_by(role) %>% count(data_quality_internal) %>%
+ggplot(aes(x = data_quality_internal, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Data quality", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("How would you rate the overall data quality of yours ystem?")
+
+# pie chart of data_quality_internal with case number and percentage
+
+table(data$data_quality_internal) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Data quality")) +
+    ggtitle("How would you rate the overall data quality of your system?")
+
+data%>%dplyr::select(role, concern_ppv_internal) %>%
+group_by(role) %>% count(concern_ppv_internal) %>%
+ggplot(aes(x = concern_ppv_internal, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Concerns about PPV", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Do you have any concerns on the completeness,\n validity, sensitivity, or positive predictive value")
+
+# pie chart of concern_ppv_internal with case number and percentage
+
+table(data$concern_ppv_internal) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Concerns about PPV")) +
+    ggtitle("Do you have any concerns on the completeness, \n validity,sensitivity, or positive predictive value?")
+
+
+data%>%dplyr::select(role, subpop_excl_internal) %>%
+group_by(role) %>% count(subpop_excl_internal) %>%
+ggplot(aes(x = subpop_excl_internal, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Subpopulation exclusion", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Do you think that certain sub-populations \n in Switzerland are excluded/under-reported in CH-SUR?")
+
+# pie chart of subpop_excl_internal with case number and percentage
+
+table(data$subpop_excl_internal) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Subpopulation exclusion")) +
+    ggtitle("Do you think that certain sub-populations \n in Switzerland are excluded/under-reported in CH-SUR?")
+
+
+data%>%dplyr::select(role, rsv) %>%
+group_by(role) %>% count(rsv) %>%
+ggplot(aes(x = rsv, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "RSV", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Do you think that the RSV should be added to CH-SUR?")
+
+# pie chart of rsv with case number and percentage
+
+Pie_RSV=table(data$rsv) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "RSV")) +
+    ggtitle("Do you think that the RSV should be added to CH-SUR?")
+
+data%>%dplyr::select(role, disease_other) %>%
+group_by(role) %>% count(disease_other) %>%
+ggplot(aes(x = disease_other, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Other diseases", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Do you think that other diseases should be added to CH-SUR?")
+# pie chart of disease_other with case number and percentage
+
+Pie_disease_other=table(data$disease_other) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Other diseases")) +
+    ggtitle("Do you think that other diseases should be added to CH-SUR?")
+
+data %>% dplyr::select(role,variable_other) %>%
+group_by(role) %>% count(variable_other) %>%
+ggplot(aes(x = variable_other, y = n, fill = role)) +
+geom_bar(stat="identity")+
+scale_y_continuous() +
+labs(x = "Other variables", y = "Number of respondents") +
+theme_bw() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+guides(fill = guide_legend(title = "Role")) +
+ggtitle("Do you think that other variables should be added to CH-SUR?")
+# pie chart of variable_other with case number and percentage
+
+Pie_variable_other=table(data$variable_other) %>% 
+    data.frame() %>% dplyr::filter(Freq>0)%>%
+    ggplot(aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(stat = "identity", width = 1) +
+    geom_text(aes(label = paste0(round(Freq / sum(Freq) * 100, 1), "%")), 
+    position = position_stack(vjust = 0.5),size=4) +
+    coord_polar("y", start = 0) +
+    theme_void() +
+    theme(legend.position = "right") +
+    scale_fill_brewer(palette = "Set1") +
+    guides(fill = guide_legend(title = "Other variables")) +
+    ggtitle("Do you think that other variables should be added to CH-SUR?")
+    
+```
+
+# assemble the pie plots in a figure
+
+```{r,echo=FALSE}
+library(gridExtra)
+library(grid)
+
+# Assuming p1, p2, p3, p4, p5, p6 are your plots
+plots <- list(Pie_importance, Pie_reliability, Pie_difficulty, Pie_adapt, Pie_RSV, Pie_disease_other)
+
+# Add a title to each plot and set the aspect ratio
+plots_with_labels <- lapply(seq_along(plots), function(i) {
+  plot <- plots[[i]] + theme(aspect.ratio = 1)  # Set the aspect ratio
+  label <- LETTERS[i]  # Use capital letters
+  plot + ggtitle(label)
+})
+
+# Arrange the plots in a grid
+gridExtra::grid.arrange(grobs = plots_with_labels, ncol = 2)
+
+# Arrange the plots in a grid
+
+pdf("Pie_plots_Main.pdf", width = 8, height = 10)
+gridExtra::grid.arrange(grobs = plots_with_labels, ncol = 2)
+
+dev.off()
+
+# Assuming p1, p2, p3, p4, p5, p6 are your plots
+plots <- list(Pie_training, Pie_response_timeliness, Pie_follow, Pie_response_timliness_spec, Pie_workhabits, Pie_working_process)
+
+# Add a title to each plot and set the aspect ratio
+plots_with_labels <- lapply(seq_along(plots), function(i) {
+  plot <- plots[[i]] + theme(aspect.ratio = 1)  # Set the aspect ratio
+  label <- LETTERS[i]  # Use capital letters
+  plot + ggtitle(label)
+})
+
+# Arrange the plots in a grid
+gridExtra::grid.arrange(grobs = plots_with_labels, ncol = 2)
+
+# Arrange the plots in a grid
+
+pdf("Pie_plots_supp.pdf", width = 8, height = 10)
+gridExtra::grid.arrange(grobs = plots_with_labels, ncol = 2)
+
+dev.off()
+```
+# prepration of a table for qualitative text analysis and text mining /wordclouds
+
+
+```{r,echo=FALSE}
+    # create a new data frame with the text data 
+
+data_qualitative_text=data %>% dplyr::select(role,contains("text"),infrastructure_fail,challenge_infrastructure,disease_others,variable_others_2,num_requests)%>%
+dplyr::select(-threshold_nosoco_unit_text,strategy_change_text)
+
+library("reshape2")
+df_text=melt(data_qualitative_text,id="role")%>%dplyr::filter(!is.na(value))%>%dplyr::filter(value!="")
+
+# create a new data frame with the text data and the role of the respondent
+
+
+write.table(df_text,file="df_text_New.csv",sep=";",row.names = FALSE,quote = FALSE,fileEncoding = "UTF-8")
+
+# create a wordcloud using the variable "value" and the role of the respondent
+
+library("wordcloud")
+
+df_text$value <- as.character(df_text$value)
+
+wordcloud(df_text$value, max.words = 100, random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
+
+```
