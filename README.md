@@ -17,3 +17,6 @@ Here’s a brief description for each of the main project files provided:
 
 - **`exploration_evaluation_survey.Rmd`**  
   An R Markdown document that conducts the qualitative survey analysis: imports survey responses, cleans and tabulates stakeholder ratings (importance, reliability, adaptability), runs text‑mining (word‑cloud) on open‑ended feedback, and renders summary tables and visualizations to assess strengths and improvement areas for CH‑SUR.
+
+# Data availability
+Data Availability Statement: The datasets presented in this repo are not readily available be-cause they are part of the Swiss surveillance system. Requests to access the datasets should be directed to the Swiss federal office of public health.The dataset will include all variables described in our Supplementary File 1 (codebook version 2023).
