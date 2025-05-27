@@ -16,7 +16,7 @@ Here’s a brief description for each of the main project files provided:
   Loads the cleaned CH‑SUR datasets (`hospdat_new_vars` and `hospdat_recoded`), defines utility functions (e.g. `dedup_last`, `dedup_first`, `filter_dags`), recodes COVID‑19 waves and influenza seasons, harmonizes centre labels, and derives new variables (e.g. severity categories, immunosuppression flags, complication and comorbidity counts).
 
 - **`delay_analysis.R`**  
-  Carries out the quantitative timeliness evaluation: sources `parameters_COVID.R` (and later `parameters_FLU.R`) and `data_load_prep.R`; loads necessary plotting and summary libraries; generates epidemic‑curve plots; computes delays between hospital admission and data entry for both COVID‑19 and influenza; produces summary tables, violin/box plots by wave/season, and completeness heatmaps; and exports results as CSV, PDF and LaTeX.
+  Carries out the quantitative timeliness evaluation: sources `parameters_COVID.R` (and later `parameters_FLU.R`) and `data_load_prep.R`; loads necessary plotting and summary libraries; generates epidemic‑curve plots; computes delays between hospital admission and data entry for both COVID‑19 and influenza; produces summary tables, violin/box plots by wave/season, and completeness heatmaps; and exports results as CSV and/or PDF.
 
 - **`exploration_evaluation_survey.Rmd`**  
   An R Markdown document that conducts the qualitative survey analysis: imports survey responses, cleans and tabulates stakeholder ratings (importance, reliability, adaptability), runs text‑mining (word‑cloud) on open‑ended feedback, and renders summary tables and visualizations to assess strengths and improvement areas for CH‑SUR.
