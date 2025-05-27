@@ -2,7 +2,7 @@
 Analysis scripts and materials for the evaluation of the CH‑SUR hospital surveillance system for influenza and COVID‑19 in Switzerland (2018–2023).
 
 Please see the manuscript "Overview and evaluation of a nationwide hospital-based surveillance system for Influenza and COVID-19 in Switzerland (CH-SUR): 2018-2023"
-Jonathan Aryeh Sobel, Marie-Céline Zanella, Rebecca Grant, Camille Beatrice Valera, Mária Suveges, Laura Urbini, Khaled Mostaguir, Sara Botero, Ursina Roder, Davide Bosetti, Rami Sommerstein, Ulrich Heininger, Petra Zimmermann, Peter W Schreiber, Domenica Flury, Anita Niederer-Loher, Philipp Jent, Alexia Cusini, Didier Pittet, Stephan Harbarth, Anne Iten*, Olivia Keiser* and the CH-SUR Collaborative Network.
+by Jonathan Aryeh Sobel, Marie-Céline Zanella, Rebecca Grant, Camille Beatrice Valera, Mária Suveges, Laura Urbini, Khaled Mostaguir, Sara Botero, Ursina Roder, Davide Bosetti, Rami Sommerstein, Ulrich Heininger, Petra Zimmermann, Peter W Schreiber, Domenica Flury, Anita Niederer-Loher, Philipp Jent, Alexia Cusini, Didier Pittet, Stephan Harbarth, Anne Iten*, Olivia Keiser* and the CH-SUR Collaborative Network.
 
 Here’s a brief description for each of the main project files provided:
 
