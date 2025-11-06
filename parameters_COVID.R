@@ -20,7 +20,7 @@ pacman::p_load("plyr",
 #########################
 centres <- c("HUG", "ALL","USB", "KSSG", "STGAG", "EOC", "HVS", "CHUV", "INSEL", "LUKS", "USZ","KISPI ZH", "KSGR", "OKS", "PED HFR", "PED KSA","PED KSW", "KSNW", "SSH", "Hirsl. ZH", "UKBB", "Hirsl. LU")
 
-disease <- 2 #c(2,3) 
+disease <- 2 
 
 if (disease %in% c(2,3)){
   disease_nm <- "COVID"
@@ -32,11 +32,6 @@ if (disease %in% c(2,3)){
 #       Date of data    #
 #########################
 rootpath <- "../../../"
-
-#@CHECK Give the appropriate dates to use the good dataset
-
-#exportdate <- as.Date("2022-11-28")
-#cleandate <- as.Date("2022-11-30")
 
 tdate <- Sys.Date()
 
@@ -52,7 +47,7 @@ export_week_start <- as.Date(export_week)
 #########################
 #   Period to consider  #
 ######################### 
-#01.10.2022-30.09.2023
+
 start_date <- as.Date("2020-01-01")
 end_date_sunday <- floor_date(exportdate,"week") #prendre le dimanche
 end_date <- exportdate # @CHECK prendre le jour avant l'export OU le jour de l'export

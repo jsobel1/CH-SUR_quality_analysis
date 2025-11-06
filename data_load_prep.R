@@ -78,25 +78,6 @@ wave_season_recode <- . %>%
 hospdat_recoded <-  wave_season_recode(hospdat_recoded)
 hospdat_new_vars <-  wave_season_recode(hospdat_new_vars)
 
-### Age and age group ###
-# age_label <- c('<1 month', '1 month-<1 year','1-5','6-12','13-19','20-29','30-39','40-49','50-59','60-69','70-79','80-89','90-99', '>100')
-# age_recoded <- . %>% 
-#   subset(!is.na(birth_year)) %>%
-#   #mutate(full_birth = as.Date(paste(birth_year, replace_na(toddler_birthmonth, 1), 1, sep = "-"), format = "%Y-%m-%d")) %>%
-#   mutate(age_y = -time_length(interval(inclusion_date, ymd(paste(birth_year,"-01-01",sep="",collapse=""))), "years")) %>%
-#   mutate(age_group_detail = cut(age_y, c(0, 1.0/12, 1, 6, 13, 20, 30, 40, 50, 60, 70, 80, 90, 100, 500), 
-#                                 age_label, include.lowest=TRUE)) %>%
-#   mutate(age_group_detail = factor(age_group_detail, ordered = TRUE, levels = age_label)) %>%
-#   mutate(age_group_for_covid_vacc = case_when(
-#     is.na(age_years) ~ NA_character_,
-#     age_years < 0 ~ NA_character_,
-#     age_years >= 0 & age_years < 5 ~ "0-4",
-#     age_years >= 5 & age_years < 12 ~ "5-11",
-#     age_years >= 12 ~ "12+"
-#   ))
-# 
-# hospdat_recoded <-  age_recoded(hospdat_recoded)
-# hospdat_new_vars <-  age_recoded(hospdat_new_vars)
 
 ### UKBB has changed name between COVID & COVID+FLU databases ###
 update_dags <- . %>%
@@ -151,14 +132,12 @@ hospdat_new_vars <- extend_outcome(hospdat_new_vars)
 immunosup <- . %>%
   mutate(immuno_sup_nohiv = case_when(
     com_hemato_immuno %in% c("Yes", 1) ~ 1,
-    #com_rheumato_immuno %in% c("Yes", 1) ~ 1,
     com_immuno_treat %in% c("Yes", 1) ~ 1,
     com_transplant %in% c("Yes", 1) ~ 1,
     TRUE ~ 0
   )) %>%
   mutate(immuno_sup = case_when(
     com_hemato_immuno %in% c("Yes", 1) ~ 1,
-    #com_rheumato_immuno %in% c("Yes", 1) ~ 1,
     com_immuno_treat %in% c("Yes", 1) ~ 1,
     com_transplant %in% c("Yes", 1) ~ 1,
     com_hivpos %in% c("Yes", 1) ~ 1,
@@ -177,33 +156,6 @@ vacc_stat_hug <- c("Fully immunised (w. additional boosters)",
                    "Partially immunised",
                    "Not immunised",
                    "Unknown status")
-
-# hug_vacc_status <- .%>%
-#   mutate(tmp = case_when(
-#     vaccincovid_dose %notin% "Unknown" ~ as.double(vaccincovid_dose),
-#     TRUE ~ NA_real_)) %>%
-#   mutate(covid_vacc_status_at_admission_hug = case_when(
-#     ## @NOTE: I changed this, since there is no more cases with Fully immunized  AND 
-#     ## nb of boosters = 4 or more, it is replaced by Fully immunized (with additional boosters)
-#     ## Maria 26/10/2022
-#     # covid_immunity_status_inclusive %in% "Fully immunized" & ((tmp %in% 3 & immuno_sup %in% 0) |
-#     #                                                             (tmp %in% 4 & immuno_sup %in% 1)) ~ vacc_stat_hug[2],
-#     # covid_immunity_status_inclusive %in% "Fully immunized" & ((tmp > 3 & immuno_sup %in% 0) |
-#     #                                                             (tmp > 4 & immuno_sup %in% 1)) ~ vacc_stat_hug[1],
-#     covid_immunity_status_inclusive %in% "Fully immunized" ~ vacc_stat_hug[2],
-#     covid_immunity_status_inclusive %in% "Fully immunized (with additional boosters)" ~ vacc_stat_hug[1],
-#     covid_immunity_status_inclusive %in% "Fully immunized" ~ vacc_stat_hug[2], 
-#     covid_immunity_status_inclusive %in% "Base immunized" ~ vacc_stat_hug[3],
-#     covid_immunity_status_inclusive %in% "Partially immunized" ~ vacc_stat_hug[4],
-#     covid_immunity_status_inclusive %in% "Not immunized" ~ vacc_stat_hug[5],
-#     covid_immunity_status_inclusive %in% "Unknown status" ~ vacc_stat_hug[6] 
-#     )) %>%
-#   mutate(covid_vacc_status_at_admission_hug = factor(covid_vacc_status_at_admission_hug, 
-#                                                      ordered = TRUE, 
-#                                                      levels = vacc_stat_hug))
-# 
-# hospdat_recoded <- hug_vacc_status(hospdat_recoded)
-# hospdat_new_vars <- hug_vacc_status(hospdat_new_vars)
 
 
 
@@ -228,23 +180,13 @@ hospdat_recoded <- disease_severity(hospdat_recoded)
 hospdat_new_vars <- disease_severity(hospdat_new_vars)
 
 ### Number of complications ###
-complications <- c(#"compl_ent",
+complications <- c(
                    "compl_respiratory",
                    "compl_pims",
                    "compl_cardiovascular",
-                   #"compl_digestive",
-                   #"compl_liver",
-                   #"compl_renal",
                    "compl_neuro_impair",
                    "compl_enceph",
-                   #"compl_convulsion",
-                   #"compl_psych",
-                   #"compl_decond",
-                   #"compl_decond", 
-                   "compl_thrombosis") #, 
-                   #"compl_bact",
-                   #"compl_nonbact",
-                    #"compl_other")
+                   "compl_thrombosis")
 
 hospdat_new_vars$nb_complications <- rowSums(replace(hospdat_new_vars[,complications], hospdat_new_vars[,complications] == -1, 0), na.rm=TRUE) #trifouiller pour virer les -1 en 0
 hospdat_recoded$nb_complications <- hospdat_new_vars$nb_complications #can do since same dataset, different coding
@@ -258,56 +200,12 @@ comorbidities <- c("com_respiratory",
                  "com_neuro_impair",
                  "com_hemato_immuno",
                  "com_oncology",
-                 #"com_rheumato_immuno",
+                 
                  "com_hivpos",
-                 "com_immuno_treat")#,
-                 #"com_others")
+                 "com_immuno_treat")
 
 hospdat_new_vars$nb_comorbidities <- rowSums(replace(hospdat_new_vars[,comorbidities], hospdat_new_vars[,comorbidities] == -1, 0), na.rm=TRUE) #trifouiller pour virer les -1 en 0
 hospdat_recoded$nb_comorbidities <- hospdat_new_vars$nb_comorbidities #can do since same dataset, different coding
-
-### Number of symptoms ###
-# symptoms <- c("severity___1",
-#               "severity___2",
-#               "severity___3",
-#               "severity___4",
-#               "severity___5",
-#               "severity_children___1",
-#               "severity_children___2",
-#               "severity_children___3",
-#               "severity_children___4",
-#               "symptoms_extra___1",
-#               "symptoms_extra___2",
-#               "symptoms_extra___3",
-#               "symptoms_extra___4",
-#               "symptoms_extra___5",
-#               "symptoms_extra___6",
-#               "symptoms_extra___7",
-#               "symptoms_extra___8",
-#               "symptoms_extra___9",
-#               "symptoms_extra___10")
-# 
-# hospdat_new_vars$nb_symptoms <- rowSums(replace(hospdat_new_vars[,symptoms], hospdat_new_vars[,symptoms] == -1, 0), na.rm=TRUE) #trifouiller pour virer les -1 en 0
-# hospdat_recoded$nb_symptoms <- hospdat_new_vars$nb_symptoms #can do since same dataset, different coding
-
-### Had a delta virus ###
-#hospdat_recoded <- hospdat_recoded %>%
- # mutate(has_delta = case_when(grepl("AY", virus_type_cov, fixed = TRUE) ~ TRUE,
-  #                             virus_type_cov %in% "B.1.617.2 - Delta" ~ TRUE,
-   #                            corr_hospital_entry_date < as.Date("2021-07-01") ~ FALSE,
-    #                           TRUE ~ FALSE))
-#hospdat_new_vars$has_delta <- hospdat_recoded$has_delta #can do since same dataset, different coding
-
-### Had a omicron virus ###
-#hospdat_recoded <- hospdat_recoded %>%
-   # mutate(has_omic_dropout = case_when(corr_hospital_entry_date < as.Date("2021-12-01") ~ FALSE, 
-                                        #virus_type_cov %in% "B.1.1.529/BA.1 - Omicron" ~ TRUE,
-                                        #virus_type_cov %in% "B.1.1.529/BA.2" ~ TRUE,
-                                        #virus_type_cov %in% "BA.1.1" ~ TRUE,
-                                        #grepl("BA.", virus_type_cov, fixed = TRUE) ~ TRUE,
-                                         #TRUE ~ FALSE))
-#hospdat_new_vars$has_omic_dropout <- hospdat_recoded$has_omic_dropout #can do since same dataset, different codings
-
 
 ### because with total
 reasons_level <- c("Nosocomial SARS-CoV-2 infection",
@@ -353,7 +251,7 @@ filter_data <- . %>%
 hospdat_recoded <-  filter_data(hospdat_recoded)
 hospdat_new_vars <-  filter_data(hospdat_new_vars)
 
-### Death week ### Done here because of the factor
+### Death week ### 
 death_week <- . %>%
   mutate(discharge_death_week = str_replace(tsibble::yearweek(discharge_death_date), " W","-")) %>%
   mutate(discharge_death_week = factor(discharge_death_week, levels = as.factor(sort(unique(.$corr_hospital_entry_week)))))

@@ -1,8 +1,6 @@
 # Clean the environment
 rm(list = ls())
 
-setwd("C:/Users/sobel/Desktop/IDMM_projects/additional_requests/Delay analysis")
-
 exportdate <- as.Date("2023-10-17")
 cleandate <- as.Date("2023-10-17")
 
@@ -31,10 +29,7 @@ p1=dplyr::filter(hospdat_recoded,case_classification_covid %in% c("Community acq
   theme(legend.position="bottom",text = element_text(size = 15),legend.title=element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 print(p1)
-# add covid waves 
-# 1st wave: 25/02/2020 to 30/04/2020
 
-#split according to charge
 
 p1+geom_vline(linetype=2,xintercept = c(ymd("2020-09-27"),
                                         ymd("2021-02-14"),
@@ -82,9 +77,7 @@ covid_newphases_specific <- data.frame(
 
 #### COVID-19 waves and Influenza seasons ####
 inf_season <- c("2018/19 season", "2019/20 season", "2020/21 season", "2021/22 season","2022/23 season") 
-#wave <- c("Phase 1 (02/2020-07/06/2020)", "Phase 2 (08/06/2020-27/09/2020)", "Phase 2b (28/09/2020-14/02/2021)", 
-#          "Phase 3 (15/02/2021-20/06/2021)", "Phase 4 (21/06/2021-10/10/2021)", "Phase 5 (11/10/2021-19/12/2021)",
- #         "Phase 6 (20/12/2021-31/03/2022)", "Normal Situation (from 01/04/2022)")
+
 
 
 
@@ -128,41 +121,6 @@ p1=dplyr::filter(hospdat_recoded,case_classification_covid %in% c("Community acq
   theme(legend.position="bottom",text = element_text(size = 15),legend.title=element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 print(p1)
-# Summer 2020 wave: 01/05/2020 to 30/09/2020
-
-# 2nd wave: 01/10/2020 to 14/02/2021
-
-# 3rd wave: 15/02/2021 to 20/06/2021
-
-# 4th wave: 21/06/2021 to 10/10/2021
-
-# 5th wave: 11/10/2021 to ???  
-
-# Create factor variable variant_s ("Delta", "Omicron BA.1", "Omicron BA.2", "Omicron BA.4/Omicron BA.5")
-# data_chsur <- data_chsur %>% mutate(variant_s = case_when(covid_sdropout %in% "S drop-out present" ~ "Omicron BA.1",
-#                                                           corr_hospital_entry_date <= "2021-11-30" ~ "Delta",
-#                                                           covid_sdropout %in% "S drop-out absent" &
-#                                                             corr_hospital_entry_date >= "2021-12-01" &
-#                                                             corr_hospital_entry_date <= "2022-02-08" ~ "Delta",
-#                                                           (covid_sdropout %in% "No search performed" |
-#                                                              covid_sdropout %in% NA) &
-#                                                             corr_hospital_entry_date >= "2022-01-20" &
-#                                                             corr_hospital_entry_date <= "2022-02-08" ~ "Omicron BA.1", 
-#                                                           covid_sdropout %in% "S drop-out absent" &
-#                                                             corr_hospital_entry_date >= "2022-02-09" &
-#                                                             corr_hospital_entry_date <= "2022-05-09" ~ "Omicron BA.2",
-#                                                           corr_hospital_entry_date >= "2022-03-28" &
-#                                                             corr_hospital_entry_date <= "2022-05-09" ~ "Omicron BA.2",
-#                                                           corr_hospital_entry_date >= "2022-07-04" ~ "Omicron BA.4/Omicron BA.5",
-# )) %>%
-#   mutate(variant_s = factor(variant_s, levels = c("Delta", "Omicron BA.1", "Omicron BA.2", "Omicron BA.4/Omicron BA.5")))
-
-#hospdat_recoded$inclusion_date
-
-#hospdat_recoded$hospital_entry_date
-
-#hospdat_recoded$centre_id
-#hospdat_recoded$case_classification_covid
 
 length(unique(hospdat_recoded$record_id))
 
@@ -177,18 +135,6 @@ print(hospdat_recoded%>%dplyr::select(centre_id,inclusion_date,hospital_entry_da
   geom_point(color="lightgrey")+geom_smooth()+xlab("inclusion")+ylab("delay [day]")+
   facet_wrap(~dags_label,ncol=6)+theme_bw()+ theme(legend.position="none")+ggtitle("Delay in COVID-19 cases entry in CH-SUR"))
 dev.off()
-
-
-# pdf("delay_distribution_year_2023_COVID_20231031.pdf",width=16,height=10)
-# print(hospdat_recoded%>%dplyr::select(centre_id,inclusion_date,hospital_entry_date,case_classification_covid,dags_label)%>%
-#   dplyr::filter(!is.na(inclusion_date),!is.na(hospital_entry_date),case_classification_covid=="Community acquired")%>%
-#     dplyr::filter(ymd(hospital_entry_date)>ymd("2022-11-01"),ymd(hospital_entry_date)<ymd("2023-10-01"))  %>%
-#   dplyr::mutate(delay=(ymd(inclusion_date)-ymd(hospital_entry_date))/ddays()) %>% dplyr::filter(delay>0)%>%
-#   ggplot(aes(factor(dags_label),delay,fill=factor(dags_label)))+coord_flip()+
-#   geom_violin()+geom_boxplot(size=0.3)+theme_bw()+theme(legend.position="none")+
-# ylab("delay [day]")+xlab("centre")+ggtitle("Delay in COVID-19 cases entry in CH-SUR in 2023"))
-
-# dev.off()
 
 
 pdf("delay_inclusion_per_phase_COVID_20231712.pdf",width=10,height=6)
@@ -237,7 +183,6 @@ delay_summary_total=hospdat_recoded%>%dplyr::select(centre_id,inclusion_date,hos
   dplyr::filter(ymd(hospital_entry_date)>ymd("2020-01-01"),ymd(hospital_entry_date)<ymd("2023-10-01")) %>%
   dplyr::mutate(delay=(ymd(inclusion_date)-ymd(hospital_entry_date))/ddays())%>%
   dplyr::filter(delay>=0)%>%
-  #group_by(dags_label)%>% 
   dplyr::summarise(nb_cases=n(),mean_delay=mean(delay,na.rm=T),
                    sd_delay=sd(delay,na.rm=T),
                    median_delay=median(delay,na.rm=T),q1=quantile(delay,0.25,na.rm=T),q3=quantile(delay,0.75,na.rm=T))%>%
@@ -302,10 +247,6 @@ hospdat_recoded%>%dplyr::select(centre_id,inclusion_date,hospital_entry_date,cas
    
    %>% gt::gtsave("tab_delay_COVID_wave_20231031.tex")
 
-
-
-#
-
 hospdat_recoded%>%dplyr::select(centre_id,inclusion_date,hospital_entry_date,COVID_wave,case_classification_covid,dags_label)%>%
   dplyr::filter(!is.na(inclusion_date),!is.na(hospital_entry_date),case_classification_covid=="Community acquired")%>%
   dplyr::mutate(delay=(ymd(inclusion_date)-ymd(hospital_entry_date))/ddays())%>% dplyr::filter(delay>0)%>%
@@ -323,38 +264,12 @@ vars_of_interest_covid <- c("death", "intermediate_stay", "icare_stay",
                             "case_classification_covid","complications",
                             "because_with_admission")
 
-# vars_of_interest_covid <- c("hospital_entry_date",
-# 	"inclusion_date",
-# 	#"case_declaration_complete",
-# "vaccincovid",
-# #"vaccination",
-# #"admission_complete",
-# "comorbidity_good_health",
-# #"antiv_infection_ttt",
-# #"antibodies_ttt",
-# #"im_strategies_ttt",
-# "intermediate_stay",
-# #"intermediate_stay_entry_date",
-# "icare_stay",
-# #"icare_stay_entry_date",
-# "complications",
-# #"compl_antibiotic_ttt",
-# #"clinical_complementary_information_complete",
-# "death",
-# #"death_date"
-# "case_classification_covid",
-# "because_with_admission"#,
-# #"patient_follow_up_complete"
-# )
-
                            
 all_vars_covid <- c("hospital_entry_date", vars_of_interest_covid,"COVID_wave")
 
 h_to_plot <- hospdat_recoded %>%
-#  filter(!(centre_id %in% list_centers_exclude)) %>%
   filter(hospital_entry_date >= as.Date(start_date)) %>%
   select(all_of(all_vars_covid)) %>%
-  #mutate(hospital_entry_month = yearmonth(as.Date(hospital_entry_date))) %>%
   group_by(COVID_wave) %>%
   dplyr::summarise(across(.cols = all_of(vars_of_interest_covid),
                    .fns = ~ 100-round(100 * sum(is.na(.x) / n()), 1),
@@ -385,13 +300,10 @@ table1 <- tbl_summary(hospdat_recoded %>%
 
 #############################3
 
-#all_vars_covid <- c("dags_label", "hospital_entry_date", vars_of_interest_covid,"COVID_wave")
 
 h_to_plot <- hospdat_recoded %>%
-#  filter(!(centre_id %in% list_centers_exclude)) %>%
   filter(hospital_entry_date >= as.Date(start_date)) %>%
   select(all_of(all_vars_covid)) %>%
-  #mutate(hospital_entry_month = yearmonth(as.Date(hospital_entry_date))) %>%
   group_by(COVID_wave) %>%
   dplyr::summarise(across(.cols = all_of(vars_of_interest_covid),
                    .fns = ~ 100-round(100 * sum(is.na(.x) / n()), 1),
@@ -411,22 +323,6 @@ Heatmap(t(hm_to_plot),cluster_rows = FALSE,cluster_columns = FALSE,name="complet
 
 dev.off()
 
-# h_to_plot <- hospdat_recoded %>%
-#   #  filter(!(centre_id %in% list_centers_exclude)) %>%
-#   filter(hospital_entry_date >= as.Date(start_date)) %>%
-#   mutate(month = lubridate::floor_date(corr_hospital_entry_date,"month"))%>%
-#   select(all_of(all_vars_covid)) %>%
-#   #mutate(hospital_entry_month = yearmonth(as.Date(hospital_entry_date))) %>%
-#   group_by(month) %>%
-#   dplyr::summarise(across(.cols = all_of(vars_of_interest_covid),
-#                           .fns = ~ round(100 * sum(is.na(.x) / n()), 1),
-#                           .names = "na_pct_{.col}")) %>%
-#   ungroup() %>%  
-#   complete(month)
-
-# hm_to_plot=as.matrix(h_to_plot[1:46,2:7],ncol=6)
-# rownames(hm_to_plot)=as.character(unlist(h_to_plot[1:46,1]$month))
-
 
 
 ###########
@@ -443,17 +339,14 @@ table2 <- tbl_summary(hospdat_recoded %>%
                       by = "COVID_wave",
                       missing = "ifany" # Exclude missing data
 ) %>%add_p()%>%as_gt() %>% gt::gtsave("tab_2_covid.tex")
-  #gt::as_latex()
 
 h_present <- hospdat_recoded %>%
-  #  filter(!(centre_id %in% list_centers_exclude)) %>%
   filter(hospital_entry_date >= as.Date(start_date)) %>%
   select(all_of(all_vars_covid)) %>%
   
   mutate(across(everything(), ~ ifelse(is.na(.), "No", .)))%>%
   mutate(case_classification_covid= ifelse(case_classification_covid=="Community acquired", "Yes", "No"))%>%
   mutate(because_with_admission= ifelse(because_with_admission=="Because of COVID-19/Influenza", "Yes", "No"))%>%
-  #mutate(hospital_entry_month = yearmonth(as.Date(hospital_entry_date))) %>%
   group_by(COVID_wave) %>%
   dplyr::summarise(across(
     .cols = all_of(vars_of_interest_covid),
@@ -461,7 +354,7 @@ h_present <- hospdat_recoded %>%
       sum = ~ sum(.x == "Yes", na.rm = TRUE), # Count of "Yes"
       pct = ~ round(100 * mean(.x == "Yes", na.rm = TRUE), 1) # Percentage of "Yes"
     ),
-    .names = "{.col}_{.fn}" # Naming the resulting columns
+    .names = "{.col}_{.fn}" 
   )) %>%
   ungroup() %>%
   complete(COVID_wave)
@@ -478,10 +371,8 @@ all_vars_covid <- c("dags_label", "hospital_entry_date", vars_of_interest_covid,
 
 
 h_to_plot <- hospdat_recoded %>%
-  #  filter(!(centre_id %in% list_centers_exclude)) %>%
   filter(hospital_entry_date >= as.Date(start_date)) %>%
   select(all_of(all_vars_covid)) %>%
-  #mutate(hospital_entry_month = yearmonth(as.Date(hospital_entry_date))) %>%
   group_by(COVID_wave) %>%
   dplyr::summarise(across(.cols = all_of(vars_of_interest_covid),
                           .fns = ~ round((100 * sum(.x ==0) / n()), 1),
@@ -507,10 +398,8 @@ all_vars_covid <- c("dags_label", "hospital_entry_date", vars_of_interest_covid,
 
 
 h_to_plot <- hospdat_recoded %>%
-  #  filter(!(centre_id %in% list_centers_exclude)) %>%
   filter(hospital_entry_date >= as.Date(start_date)) %>%
   select(all_of(all_vars_covid)) %>%
-  #mutate(hospital_entry_month = yearmonth(as.Date(hospital_entry_date))) %>%
   group_by(COVID_wave) %>%
   dplyr::summarise(across(.cols = all_of(vars_of_interest_covid),
                           .fns = ~100- round((100 * sum(.x ==0) / n()), 1),
@@ -526,10 +415,7 @@ Heatmap(t(hm_to_plot),cluster_rows = FALSE,cluster_columns = FALSE,name = "compl
 
 dev.off()
 
-#df_delay=hospdat_recoded%>%dplyr::select(centre_id,inclusion_date,hospital_entry_date,case_classification_covid)%>%
- # dplyr::filter(!is.na(inclusion_date),!is.na(hospital_entry_date),case_classification_covid=="Community acquired")%>%
-  #dplyr::mutate(delay=(ymd(inclusion_date)-ymd(hospital_entry_date))/ddays())
-
+#############################
 source("parameters_FLU.R")
 source("data_load_prep.R")
 
@@ -539,8 +425,6 @@ season_colors_fill <- c("2018/19" = "#041669",
                         "2021/22" = "#e0d910",
                         "2022/23" = "#cc1042",
                         "2022/23" = "#CC10B3")
-
-
 
 hospdat_recoded%>%dplyr::select(dags_label,centre_id,inclusion_date,hospital_entry_date,case_classification_flu)%>%
   dplyr::filter(!is.na(inclusion_date),!is.na(hospital_entry_date),case_classification_flu=="Community acquired")%>%
@@ -569,7 +453,6 @@ hospdat_recoded%>%dplyr::select(Flu_season,centre_id,inclusion_date,hospital_ent
                                                                                            "2022/23 season" = "#cc1042"
                                                                                           ))+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),legend.position="none")+
-  #geom_violin()+
   ylab("delay [day]")+xlab("influenza season")+ggtitle("Delay in influenza cases entry in CH-SUR")+ylim(c(0,20))
 
 dev.off()
@@ -628,42 +511,11 @@ table1 <- tbl_summary(hospdat_recoded %>%
 ) %>%add_p()%>%as_gt() %>% gt::gtsave("tab_1_flu.tex")
 
 
-# Data Completness check
-
-# vars_of_interest_covid <- c("death", "intermediate_stay", "icare_stay",
-#                             "vaccination",
-#                             "case_classification_flu")
-# vars_of_interest_covid <- c("hospital_entry_date",
-#                             "inclusion_date",
-#                             #"case_declaration_complete",
-#                             "vaccination",
-#                             #"vaccination",
-#                             #"admission_complete",
-#                             "comorbidity_good_health",
-#                             #"antiv_infection_ttt",
-#                             #"antibodies_ttt",
-#                             #"im_strategies_ttt",
-#                             "intermediate_stay",
-#                             #"intermediate_stay_entry_date",
-#                             "icare_stay",
-#                             #"icare_stay_entry_date",
-#                             "complications",
-#                             #"compl_antibiotic_ttt",
-#                             #"clinical_complementary_information_complete",
-#                             "death",
-#                             #"death_date"
-#                             "case_classification_flu"#,
-#                             #"because_with_admission",
-#                             #"patient_follow_up_complete"
-# )
-
 all_vars_flu <- c("dags_label", "hospital_entry_date", vars_of_interest_flu,"Flu_season")
 
 h_to_plot <- hospdat_recoded %>%
-  #  filter(!(centre_id %in% list_centers_exclude)) %>%
   filter(hospital_entry_date >= as.Date(start_date)) %>%
   select(all_of(all_vars_flu)) %>%
-  #mutate(hospital_entry_month = yearmonth(as.Date(hospital_entry_date))) %>%
   group_by(Flu_season) %>%
   dplyr::summarise(across(.cols = all_of(vars_of_interest_flu),
                           .fns = ~ 100-round(100 * sum(is.na(.x) / n()), 1),
@@ -694,10 +546,8 @@ all_vars_flu <- c("dags_label", "hospital_entry_date", vars_of_interest_flu,"Flu
 
 
 h_to_plot <- hospdat_recoded %>%
-  #  filter(!(centre_id %in% list_centers_exclude)) %>%
   filter(hospital_entry_date >= as.Date(start_date)) %>%
   select(all_of(all_vars_flu)) %>%
-  #mutate(hospital_entry_month = yearmonth(as.Date(hospital_entry_date))) %>%
   group_by(Flu_season) %>%
   dplyr::summarise(across(.cols = all_of(vars_of_interest_flu),
                           .fns = ~100- round((100 * sum(.x ==0) / n()), 1),
@@ -731,13 +581,7 @@ table2 <- tbl_summary(hospdat_recoded %>%
                       missing = "ifany" # Exclude missing data
 ) %>%add_p()%>%as_gt()%>% gt::gtsave("tab_2_flu.tex")
 
-
-
-#df_delay=hospdat_recoded%>%dplyr::select(centre_id,inclusion_date,hospital_entry_date,case_classification_flu)%>%
- # dplyr::filter(!is.na(inclusion_date),!is.na(hospital_entry_date),case_classification_flu=="Community acquired")%>%
-  #dplyr::mutate(delay=(ymd(inclusion_date)-ymd(hospital_entry_date))/ddays())
-
-
+############################################
 pdf("delay_analysis_per_hosp_fig_20231031.pdf", height=6,width=10)
 
 dags=unique(hospdat_recoded$dags_label)
@@ -792,8 +636,6 @@ dev.off()
 
 ############################################
 
-setwd("C:/Users/sobel/Desktop/IDMM_projects/additional_requests/Delay analysis")
-
 exportdate <- as.Date("2023-10-17")
 cleandate <- as.Date("2023-10-17")
 
@@ -814,7 +656,6 @@ delay_summary_total=hospdat_recoded%>%dplyr::select(centre_id,inclusion_date,hos
   dplyr::filter(ymd(hospital_entry_date)>ymd("2020-01-01"),ymd(hospital_entry_date)<ymd("2023-10-01")) %>%
   dplyr::mutate(delay=(ymd(inclusion_date)-ymd(hospital_entry_date))/ddays())%>%
   dplyr::filter(delay>=0)%>%
-  #group_by(dags_label)%>% 
   dplyr::summarise(nb_cases=n(),mean_delay=mean(delay,na.rm=T),
                    sd_delay=sd(delay,na.rm=T),
                    median_delay=median(delay,na.rm=T),q1=quantile(delay,0.25,na.rm=T),q3=quantile(delay,0.75,na.rm=T))%>%
